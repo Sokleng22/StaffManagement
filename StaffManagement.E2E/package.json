@@ -1,5 +1,5 @@
 {
-  "name": "staff-management-e2e",
+  "name": "StaffManagement-e2e",
   "version": "1.0.0",
   "description": "End-to-end tests for Staff Management System",
   "scripts": {

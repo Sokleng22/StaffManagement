@@ -19,10 +19,10 @@ jobs:
         dotnet-version: '9.0.x'
     
     - name: Restore dependencies
-      run: dotnet restore staff-management.sln
+      run: dotnet restore StaffManagement.sln
     
     - name: Build solution
-      run: dotnet build staff-management.sln --no-restore
+      run: dotnet build StaffManagement.sln --no-restore
     
     - name: Run tests
       run: dotnet test StaffManagement.Tests/StaffManagement.Tests.csproj --no-build --verbosity normal
@@ -82,7 +82,7 @@ jobs:
       working-directory: StaffManagement.E2E
     
     - name: Build solution
-      run: dotnet build staff-management.sln
+      run: dotnet build StaffManagement.sln
     
     - name: Start backend
       run: |

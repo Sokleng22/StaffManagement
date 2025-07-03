@@ -70,9 +70,9 @@ graph TD
 1. **Repository Setup**:
    ```bash
    # Ensure your repository has the following structure:
-   staff-management/
+   StaffManagement/
    ├── .github/workflows/ci-cd.yml
-   ├── staff-management.sln
+   ├── StaffManagement.sln
    ├── StaffManagement.Api/
    ├── StaffManagement.Web/
    ├── StaffManagement.Tests/
@@ -127,7 +127,7 @@ Ensure these files are present and up-to-date:
 - `StaffManagement.Web/package.json` - Node.js dependencies
 - `StaffManagement.Web/package-lock.json` - Locked dependency versions
 - `*.csproj` files - .NET project configurations
-- `staff-management.sln` - Solution file
+- `StaffManagement.sln` - Solution file
 
 ## 🧪 Testing Locally
 
@@ -150,8 +150,8 @@ chmod +x scripts/local-cicd.sh
 
 1. **Backend Tests**:
    ```bash
-   dotnet restore staff-management.sln
-   dotnet build staff-management.sln
+   dotnet restore StaffManagement.sln
+   dotnet build StaffManagement.sln
    dotnet test StaffManagement.Tests/StaffManagement.Tests.csproj
    ```
 

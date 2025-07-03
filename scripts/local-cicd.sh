@@ -23,15 +23,15 @@ print_error() {
 }
 
 # Check if we're in the right directory
-if [ ! -f "staff-management.sln" ]; then
-    print_error "Please run this script from the staff-management root directory"
+if [ ! -f "StaffManagement.sln" ]; then
+    print_error "Please run this script from the StaffManagement root directory"
     exit 1
 fi
 
 # Step 1: Backend Tests
 echo -e "\n📦 Testing Backend..."
-dotnet clean staff-management.sln > /dev/null 2>&1
-dotnet restore staff-management.sln
+dotnet clean StaffManagement.sln > /dev/null 2>&1
+dotnet restore StaffManagement.sln
 if [ $? -eq 0 ]; then
     print_status "Dependencies restored"
 else
@@ -39,7 +39,7 @@ else
     exit 1
 fi
 
-dotnet build staff-management.sln --no-restore
+dotnet build StaffManagement.sln --no-restore
 if [ $? -eq 0 ]; then
     print_status "Solution built successfully"
 else

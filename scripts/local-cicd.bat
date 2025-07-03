@@ -4,23 +4,23 @@ REM Local CI/CD simulation script for Staff Management (Windows)
 echo 🚀 Starting local CI/CD simulation...
 
 REM Check if we're in the right directory
-if not exist "staff-management.sln" (
-    echo ❌ Please run this script from the staff-management root directory
+if not exist "StaffManagement.sln" (
+    echo ❌ Please run this script from the StaffManagement root directory
     exit /b 1
 )
 
 REM Step 1: Backend Tests
 echo.
 echo 📦 Testing Backend...
-dotnet clean staff-management.sln >nul 2>&1
-dotnet restore staff-management.sln
+dotnet clean StaffManagement.sln >nul 2>&1
+dotnet restore StaffManagement.sln
 if %errorlevel% neq 0 (
     echo ❌ Failed to restore dependencies
     exit /b 1
 )
 echo ✅ Dependencies restored
 
-dotnet build staff-management.sln --no-restore
+dotnet build StaffManagement.sln --no-restore
 if %errorlevel% neq 0 (
     echo ❌ Build failed
     exit /b 1
