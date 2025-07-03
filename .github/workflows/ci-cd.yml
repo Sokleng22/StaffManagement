@@ -71,7 +71,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: StaffManagement.E2E/package.json
+        cache-dependency-path: StaffManagement.E2E/package-lock.json
     
     - name: Install E2E dependencies
       run: npm ci
