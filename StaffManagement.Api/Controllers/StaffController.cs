@@ -4,6 +4,9 @@ using StaffManagement.SharedLib.Models;
 
 namespace StaffManagement.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing staff operations including CRUD operations, search, and export functionality
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class StaffController : ControllerBase
@@ -11,6 +14,11 @@ namespace StaffManagement.Api.Controllers
         private readonly IStaffService _staffService;
         private readonly ILogger<StaffController> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the StaffController
+        /// </summary>
+        /// <param name="staffService">Service for staff operations</param>
+        /// <param name="logger">Logger for this controller</param>
         public StaffController(IStaffService staffService, ILogger<StaffController> logger)
         {
             _staffService = staffService;
