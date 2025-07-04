@@ -1,10 +1,25 @@
 # Staff Management CI/CD Workflow Instructions
 
-This document provides comprehensive instructions for the CI/CD pipeline setup and usage for the Staff Management project.
+This document provides comprehensive instructions for the CI/CD pipeline setup and usage for the Staff Ma- `StaffManagement.Web/package.json` - Node.js dependencies (React 19.1, MUI, etc.)
+- `StaffManagement.Web/package-lock.json` - Locked dependency versions
+- `StaffManagement.E2E/package.json` - Playwright E2E test dependencies
+- `*.csproj` files - .NET project configurations (.NET 8.0)
+- `StaffManagement.sln` - Solution file containing all projectsent project.
 
 ## 📋 Overview
 
 The CI/CD pipeline automatically builds, tests, and deploys the Staff Management application whenever code is pushed to the repository. The pipeline consists of several jobs that run in parallel and sequence to ensure code quality and successful deployment.
+
+## 🏗️ Project Architecture
+
+The Staff Management system is a modern web application with the following components:
+
+- **StaffManagement.Api**: ASP.NET Core 8.0 Web API backend
+- **StaffManagement.Web**: React 19.1 frontend with MUI (Material-UI)
+- **StaffManagement.APP.Logic**: Business logic layer with Entity Framework
+- **StaffManagement.SharedLib**: Shared models, DTOs, helpers, and utilities
+- **StaffManagement.Tests**: Unit and integration tests with xUnit
+- **StaffManagement.E2E**: Playwright end-to-end tests
 
 ## 🏗️ Pipeline Architecture
 
@@ -27,41 +42,52 @@ graph TD
 - **Purpose**: Validates .NET API and business logic
 - **Actions**:
   - Restores NuGet dependencies
-  - Builds the entire solution
+  - Builds the entire solution (including API, Logic, SharedLib, and Tests projects)
   - Runs all unit and integration tests
-- **Requirements**: .NET 9.0.x
+- **Requirements**: .NET 8.0.x (configured in workflow)
+- **Projects Tested**: 
+  - StaffManagement.Api
+  - StaffManagement.APP.Logic
+  - StaffManagement.SharedLib
+  - StaffManagement.Tests
 
 ### 2. Frontend Testing (`test-frontend`)
 - **Purpose**: Validates React application
 - **Actions**:
-  - Installs npm dependencies
-  - Runs Jest tests with coverage
-  - Builds the React application
+  - Installs npm dependencies using `npm ci`
+  - Builds the React application for production
 - **Requirements**: Node.js 18.x
+- **Technologies**: React 19.1, MUI (Material-UI)
+- **Coverage**: Builds application to verify functionality
 
 ### 3. End-to-End Testing (`e2e-tests`)
 - **Purpose**: Tests the complete application flow
 - **Actions**:
-  - Starts the .NET API server
-  - Starts the React development server
+  - Starts the .NET API server on port 5009
+  - Starts the React development server on port 3000
   - Runs Playwright E2E tests
   - Uploads test reports as artifacts
 - **Dependencies**: Requires both backend and frontend tests to pass
+- **Health Checks**: Validates both services are running before testing
 
 ### 4. Security Scanning (`security-scan`)
-- **Purpose**: Scans for vulnerabilities
+- **Purpose**: Scans for vulnerabilities in the codebase
 - **Actions**:
-  - Runs Trivy vulnerability scanner
-  - Uploads results to GitHub Security tab
+  - Runs Trivy vulnerability scanner on filesystem
+  - Uploads results to GitHub Security tab in SARIF format
 - **Runs**: In parallel with other tests
+- **Coverage**: Scans all project files for known vulnerabilities
 
 ### 5. Deployment (`deploy`)
-- **Purpose**: Creates deployment artifacts
+- **Purpose**: Creates deployment artifacts for production
 - **Actions**:
-  - Builds optimized production versions
-  - Creates deployment package
+  - Builds optimized production versions of both backend and frontend
+  - Creates deployment package with both components
   - Uploads artifacts for download
 - **Trigger**: Only runs on `main` branch after all tests pass
+- **Artifacts**: 
+  - Backend: Published .NET application
+  - Frontend: Optimized React build with production settings
 
 ## 🔧 Setup Instructions
 
@@ -74,9 +100,16 @@ graph TD
    ├── .github/workflows/ci-cd.yml
    ├── StaffManagement.sln
    ├── StaffManagement.Api/
+   ├── StaffManagement.APP.Logic/
+   ├── StaffManagement.SharedLib/
    ├── StaffManagement.Web/
    ├── StaffManagement.Tests/
-   └── StaffManagement.E2E/
+   ├── StaffManagement.E2E/
+   ├── scripts/
+   │   ├── local-cicd.bat
+   │   └── local-cicd.sh
+   ├── package.json
+   └── README.md
    ```
 
 2. **Branch Protection**:
@@ -124,10 +157,11 @@ runs-on: ubuntu-latest
 
 Ensure these files are present and up-to-date:
 
-- `StaffManagement.Web/package.json` - Node.js dependencies
+- `StaffManagement.Web/package.json` - Node.js dependencies (React 19.1, MUI, etc.)
 - `StaffManagement.Web/package-lock.json` - Locked dependency versions
-- `*.csproj` files - .NET project configurations
-- `StaffManagement.sln` - Solution file
+- `StaffManagement.E2E/package.json` - Playwright E2E test dependencies
+- `*.csproj` files - .NET project configurations (.NET 8.0)
+- `StaffManagement.sln` - Solution file containing all projects
 
 ## 🧪 Testing Locally
 
@@ -150,29 +184,42 @@ chmod +x scripts/local-cicd.sh
 
 1. **Backend Tests**:
    ```bash
+   # Restore dependencies for all projects
    dotnet restore StaffManagement.sln
+   
+   # Build the entire solution
    dotnet build StaffManagement.sln
-   dotnet test StaffManagement.Tests/StaffManagement.Tests.csproj
+   
+   # Run unit and integration tests
+   dotnet test StaffManagement.Tests/StaffManagement.Tests.csproj --verbosity normal
    ```
 
 2. **Frontend Tests**:
    ```bash
    cd StaffManagement.Web
+   
+   # Install dependencies (clean install)
    npm ci
-   npm test -- --watchAll=false
+   
+   # Build for production
    npm run build
    ```
 
 3. **E2E Tests**:
    ```bash
-   # Terminal 1: Start API
-   dotnet run --project StaffManagement.Api/StaffManagement.Api.csproj
+   # Terminal 1: Start API (port 5009)
+   dotnet run --project StaffManagement.Api/StaffManagement.Api.csproj --urls "http://localhost:5009"
    
-   # Terminal 2: Start React app
-   cd StaffManagement.Web && npm start
+   # Terminal 2: Start React app (port 3000)
+   cd StaffManagement.Web
+   set REACT_APP_API_BASE_URL=http://localhost:5009
+   npm start
    
    # Terminal 3: Run E2E tests
-   cd StaffManagement.E2E && npx playwright test
+   cd StaffManagement.E2E
+   npm ci
+   npx playwright install --with-deps
+   npx playwright test
    ```
 
 ## 🚨 Troubleshooting
@@ -191,17 +238,20 @@ chmod +x scripts/local-cicd.sh
 
 **Symptom**: `npm run build` fails
 **Solutions**:
-- Delete `node_modules` and run `npm ci`
-- Check for TypeScript/JavaScript errors
-- Verify environment variables are set correctly
+- Delete `node_modules` and `package-lock.json`, then run `npm install`
+- Check for TypeScript/JavaScript errors in the console
+- Verify environment variables are set correctly (REACT_APP_API_BASE_URL)
+- Ensure React 19.1 compatibility with all dependencies
 
 #### 3. E2E Test Failures
 
 **Symptom**: Playwright tests fail or timeout
 **Solutions**:
-- Verify both API and frontend are running
-- Check port conflicts (API: 5009, React: 3000)
-- Review Playwright configuration in `StaffManagement.E2E/`
+- Verify both API (port 5009) and frontend (port 3000) are running
+- Check for port conflicts with other applications
+- Review Playwright configuration in `StaffManagement.E2E/playwright.config.js`
+- Ensure proper health check endpoints are responding
+- Check network connectivity between services
 
 #### 4. Security Scan Issues
 
@@ -227,14 +277,19 @@ chmod +x scripts/local-cicd.sh
 
 3. **Dependency Issues**:
    ```bash
-   # Clear all caches
-   dotnet clean
-   rm -rf StaffManagement.Web/node_modules
-   rm StaffManagement.Web/package-lock.json
+   # Clear all caches and rebuild
+   dotnet clean StaffManagement.sln
    
-   # Reinstall
-   dotnet restore
+   # Remove Node.js artifacts
+   Remove-Item -Recurse -Force StaffManagement.Web/node_modules -ErrorAction SilentlyContinue
+   Remove-Item StaffManagement.Web/package-lock.json -ErrorAction SilentlyContinue
+   Remove-Item -Recurse -Force StaffManagement.E2E/node_modules -ErrorAction SilentlyContinue
+   Remove-Item StaffManagement.E2E/package-lock.json -ErrorAction SilentlyContinue
+   
+   # Reinstall everything
+   dotnet restore StaffManagement.sln
    cd StaffManagement.Web && npm install
+   cd ../StaffManagement.E2E && npm install
    ```
 
 ## 📦 Deployment Artifacts
@@ -279,7 +334,6 @@ You can manually trigger the workflow:
 
 ### Test Results
 - Unit test results appear in workflow logs
-- Coverage reports are generated for frontend tests
 - E2E test reports are uploaded as artifacts
 
 ### Security Reports
@@ -311,13 +365,13 @@ Edit `.github/workflows/ci-cd.yml`:
 - name: Setup .NET
   uses: actions/setup-dotnet@v4
   with:
-    dotnet-version: '9.0.x'  # Update version here
+    dotnet-version: '8.0.x'  # Currently using 8.0.x (update as needed)
 
 # Change Node.js version
 - name: Setup Node.js
   uses: actions/setup-node@v4
   with:
-    node-version: '18'  # Update version here
+    node-version: '18'  # Currently using 18.x (update as needed)
 ```
 
 ### Adding Deployment Targets
@@ -338,8 +392,10 @@ Edit `.github/workflows/ci-cd.yml`:
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [.NET CLI Reference](https://docs.microsoft.com/en-us/dotnet/core/tools/)
 - [React Build Documentation](https://create-react-app.dev/docs/production-build/)
+- [MUI Documentation](https://mui.com/material-ui/getting-started/)
 - [Playwright Testing](https://playwright.dev/docs/intro)
 - [Trivy Security Scanner](https://trivy.dev/)
+- [ASP.NET Core Documentation](https://docs.microsoft.com/en-us/aspnet/core/)
 
 ## 🆘 Support
 
@@ -347,12 +403,12 @@ If you encounter issues:
 
 1. Check this documentation first
 2. Review workflow logs in GitHub Actions
-3. Test locally using the provided scripts
+3. Test locally using the provided scripts (`scripts/local-cicd.bat` or `scripts/local-cicd.sh`)
 4. Check for known issues in the repository
-5. Create an issue with detailed error information
+5. Create an issue with detailed error information and logs
 
 ---
 
-**Last Updated**: July 3, 2025
+**Last Updated**: July 4, 2025
 **Version**: 1.0
 **Maintainer**: Development Team
