@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   TextField,
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -21,6 +20,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -100,7 +100,7 @@ const StaffList = () => {
 
   useEffect(() => {
     loadStaff();
-  }, [page, pageSize, searchTerm, department, position, isActive]);
+  }, [loadStaff]);
 
   useEffect(() => {
     loadDepartmentsAndPositions();
