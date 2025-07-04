@@ -165,35 +165,55 @@ const StaffList = () => {
   };
 
   const handleExportPdf = () => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(20);
-    doc.text('Staff Management Report', 20, 20);
-    
-    doc.setFontSize(12);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
-    
-    const tableData = staffData.map(staff => [
-      staff.id,
-      staff.fullName,
-      staff.email,
-      staff.department,
-      staff.position,
-      `$${staff.salary.toLocaleString()}`,
-      new Date(staff.hireDate).toLocaleDateString(),
-      staff.isActive ? 'Active' : 'Inactive'
-    ]);
+    try {
+      // Check if there's data to export
+      if (!staffData || staffData.length === 0) {
+        showSnackbar('No data available to export', 'warning');
+        return;
+      }
 
-    doc.autoTable({
-      head: [['ID', 'Name', 'Email', 'Department', 'Position', 'Salary', 'Hire Date', 'Status']],
-      body: tableData,
-      startY: 40,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [25, 118, 210] }
-    });
+      console.log('Starting PDF export with data:', staffData.length, 'records');
+      
+      const doc = new jsPDF();
+      
+      doc.setFontSize(20);
+      doc.text('Staff Management Report', 20, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+      
+      const tableData = staffData.map(staff => [
+        staff.id,
+        staff.fullName || `${staff.firstName} ${staff.lastName}`,
+        staff.email,
+        staff.department,
+        staff.position,
+        `$${staff.salary?.toLocaleString() || '0'}`,
+        new Date(staff.hireDate).toLocaleDateString(),
+        staff.isActive ? 'Active' : 'Inactive'
+      ]);
 
-    doc.save(`staff_report_${new Date().toISOString().split('T')[0]}.pdf`);
-    showSnackbar('PDF export completed');
+      console.log('Table data prepared:', tableData.length, 'rows');
+
+      doc.autoTable({
+        head: [['ID', 'Name', 'Email', 'Department', 'Position', 'Salary', 'Hire Date', 'Status']],
+        body: tableData,
+        startY: 40,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [25, 118, 210] }
+      });
+
+      const filename = `staff_report_${new Date().toISOString().split('T')[0]}.pdf`;
+      console.log('Saving PDF as:', filename);
+      
+      doc.save(filename);
+      showSnackbar('PDF export completed');
+      console.log('PDF export successful');
+      
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      showSnackbar(`Error exporting PDF: ${error.message}`, 'error');
+    }
   };
 
   const handleClearFilters = () => {
